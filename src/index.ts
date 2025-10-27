@@ -11,7 +11,8 @@ const app = new App({
     socketMode: true
 })
 
-
+  // load home module
+  
 ;(async () => {
   // Start the app
   await app.start(process.env.PORT || 3000);
