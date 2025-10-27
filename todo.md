@@ -1,0 +1,13 @@
+- [ ] use prisma psql
+- [ ] deploy on coolify uptime server
+- [ ] typescript app
+- [ ] admin config file (./src/admins.ts)
+- [ ] add it so it can give u a exportable uptime ss or smt
+- [ ] make it so some way if this goes down there is a way to recover miss requests idk (very unlikely so low priotirty)
+- [ ] secure
+- [ ] teams!
+- [ ] support channels and users
+- [ ] audit log in prisma (for admin ui)
+- [ ] NO WEB UI USE SLACKBOT ONLY RAAAA
+- [ ] slackbot it correctly lmao
+- [x] require review before adding yourself as an admin 
