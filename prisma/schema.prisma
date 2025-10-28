@@ -40,3 +40,25 @@ model UptimeKumaTracker {
   teamId    Int
   createdAt DateTime @default(now())
 }
+
+enum AuditAction {
+  CREATE_TEAM
+  DELETE_TEAM
+  ADD_MEMBER
+  REMOVE_MEMBER
+  CREATE_TRACKER
+  DELETE_TRACKER
+  UPDATE_TRACKER
+  SEED
+  STARTUP
+  EXIT
+  ACCESS_HOMEPAGE
+}
+
+model AuditLog {
+  id        Int         @id @default(autoincrement())
+  author    String
+  action    AuditAction
+  target    String?
+  createdAt DateTime    @default(now())
+}
