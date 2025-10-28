@@ -2,7 +2,9 @@ import { App } from "@slack/bolt";
 import { PrismaClient } from "@prisma/client";
 import buildMain from "../views/main";
 export default function homeEvent(app: App, prisma: PrismaClient) {
+    console.debug(`#heeomerhietuhirgiyueffib`)
     app.event("app_home_opened", async ({ event, client, logger }) => {
+        console.debug(`#apphomeoepend`)
         try {
             const defaultView = buildMain(app, event);
             await client.views.publish({

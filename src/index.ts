@@ -1,6 +1,7 @@
 import "dotenv/config"
 import { App, ExpressReceiver } from "@slack/bolt"
 import { PrismaClient } from "@prisma/client"
+import express from "express"
 import homeEvent from "./modules/home"
 // import handle
 const prisma = new PrismaClient()
@@ -8,7 +9,7 @@ const prisma = new PrismaClient()
 const receiver = new ExpressReceiver({
   signingSecret: process.env.SLACK_SIGNING_SECRET!,
 })
-
+//@ts-ignore STFU
 const app = new App({
   token: process.env.SLACK_BOT_TOKEN!,
   appToken: process.env.SLACK_APP_TOKEN!,
@@ -16,9 +17,9 @@ const app = new App({
   socketMode: true,
 })
 
-const expressApp = receiver.app
+const expressApp = process.env.SLACK_APP_TOKEN ? express() :  receiver.app
 
-expressApp.get("/health", (req, res) => {
+expressApp.get("/health", (req: express.Request, res: express.Response) => {
   res.json({ status: "ok" })
 })
 homeEvent(app, prisma)

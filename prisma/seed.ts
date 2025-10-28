@@ -13,7 +13,7 @@ async function main() {
             usersOnTeam: {
                 connect: admins.map(id => ({ slackId: id }))
             },
-            teamCreator: { connect: { slackId: admins[0] } }
+            teamCreator: { connect: { slackId: admins[0]! } }
         }
     })
     console.log(`Seeded ${admins.length} admin users and a team.`)
