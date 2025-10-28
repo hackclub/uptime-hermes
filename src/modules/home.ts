@@ -3,11 +3,11 @@ import { PrismaClient } from "@prisma/client";
 import buildMain from "../views/main";
 export default function homeEvent(app: App, prisma: PrismaClient) {
     app.event("app_home_opened", async ({ event, client, logger }) => {
-        // render default view
-        const defaultView = await buildMain(app, event)
         try {
+            const defaultView = buildMain(app, event);
             await client.views.publish({
                 user_id: event.user,
+                //@ts-ignore
                 view: defaultView,
             });
         } catch (error) {
@@ -27,7 +27,7 @@ export default function homeEvent(app: App, prisma: PrismaClient) {
                         },
                     ],
                 },
-            })
+            });
         }
-    })
+    });
 }
