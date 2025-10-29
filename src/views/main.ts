@@ -16,7 +16,7 @@ export default function buildMain(app: App, event: any) {
                 type: "section",
                 text: {
                     type: "mrkdwn",
-                    text: "Welcome to Uptime Hermes! Monitor your services and get notified when they go down."
+                    text: "Welcome to Uptime Hermes! monitor shit"
                 }
             }
         ]

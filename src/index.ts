@@ -17,14 +17,13 @@ const app = new App({
   socketMode: true,
 })
 
-const expressApp = process.env.SLACK_APP_TOKEN ? express() :  receiver.app
+const expressApp = process.env.SLACK_APP_TOKEN ? express() : receiver.app
 
 expressApp.get("/health", (req: express.Request, res: express.Response) => {
   res.json({ status: "ok" })
 })
 homeEvent(app, prisma)
   // load home module
-
   ; (async () => {
     const port = process.env.PORT || 3000
     await app.start(port)
