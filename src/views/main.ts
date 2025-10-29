@@ -12,12 +12,36 @@ export default function buildMain(app: App, event: any) {
                     emoji: true
                 }
             },
+            // buttons tab
             {
-                type: "section",
-                text: {
-                    type: "mrkdwn",
-                    text: "Welcome to Uptime Hermes! monitor shit"
-                }
+                type: "actions",
+                elements: [
+                    event.is_admin?{
+                        type: "button",
+                        text: {
+                            type: "plain_text",
+                            text: ":neocat_smug: Audit logs",
+                            emoji: true
+                        },
+                        action_id: "open_audit_logs"
+                    }   :null,
+                    {
+                        type:"button",
+                        text: {
+                            type: "plain_text", 
+                            text: "My Teams"
+                        },
+                        action_id: "open_my_teams"
+                    }, 
+                    {
+                        type: "button",
+                        text: {
+                            type: "plain_text",
+                            text: "My trackers"
+                        },
+                        action_id: "open_my_trackers"
+                    }
+                ].filter(Boolean)
             }
         ]
     };

@@ -3,6 +3,7 @@ import { App, ExpressReceiver } from "@slack/bolt"
 import { PrismaClient } from "@prisma/client"
 import express from "express"
 import homeEvent from "./modules/home"
+import handleActions from "./modules/action"
 // import handle
 const prisma = new PrismaClient()
 
@@ -23,6 +24,7 @@ expressApp.get("/health", (req: express.Request, res: express.Response) => {
   res.json({ status: "ok" })
 })
 homeEvent(app, prisma)
+handleActions(app, prisma)
   // load home module
   ; (async () => {
     const port = process.env.PORT || 3000

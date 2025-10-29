@@ -1,10 +1,18 @@
 import { App } from "@slack/bolt";
 import { PrismaClient } from "@prisma/client";
 import buildMain from "../views/main";
+import { admins } from "../admins";
 export default function homeEvent(app: App, prisma: PrismaClient) {
-    console.debug(`#heeomerhietuhirgiyueffib`)
     app.event("app_home_opened", async ({ event, client, logger }) => {
-        console.debug(`#apphomeoepend`)
+        //@ts-ignore
+        event.is_admin = admins.includes(event.user);
+        await prisma.auditLog.create({
+            data: {
+                author: event.user,
+                action: "ACCESS_HOMEPAGE"
+            }
+        })
+
         try {
             const defaultView = buildMain(app, event);
             await client.views.publish({
@@ -12,6 +20,7 @@ export default function homeEvent(app: App, prisma: PrismaClient) {
                 //@ts-ignore
                 view: defaultView,
             });
+
         } catch (error) {
             logger.error(error);
             await client.views.publish({
