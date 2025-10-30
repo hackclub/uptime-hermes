@@ -1,15 +1,14 @@
 import { PrismaClient } from "@prisma/client";
 
-export default async function getAuditLogsView(prisma: PrismaClient)
-{
+export default async function getAuditLogsView(prisma: PrismaClient) {
     const logs = await prisma.auditLog.findMany({
         orderBy: {
             createdAt: "desc"
         },
         take: 10
     })
-return {
-        type: "home",
+    return {
+        type: "home" as const,
         blocks: [
             {
                 type: "header",
@@ -29,7 +28,7 @@ return {
                             text: "Refresh"
                         },
                         action_id: "refresh_audit_logs"
-                    }, 
+                    },
                     {
                         type: "button",
                         text: {
@@ -44,15 +43,18 @@ return {
                             type: "plain_text",
                             text: "Export"
                         },
-                        // link
-                        url: "https://siteorsmt.hackclub.com/export?key=tempkey&page=x",
-                        action_id: "export_audit_logs"
+                        url: "https://siteorsmt.hackclub.com/export?key=tempkey&page=x"
                     }
-                ],
-                
+                ]
             },
-// todo display audit logs here
+            // todo display audit logs here
+            ...logs.map(log => ({
+                type: "section",
+                text: {
+                    type: "mrkdwn",
+                    text: `*${log.action}* by ${log.author.startsWith("U") ? `<@${log.author}>` : log.author} on ${new Date(log.createdAt).toLocaleString()}`
+                }
+            })).slice(0, 9)
         ]
-}
-
+    }
 }

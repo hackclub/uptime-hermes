@@ -23,6 +23,7 @@ const expressApp = process.env.SLACK_APP_TOKEN ? express() : receiver.app
 expressApp.get("/health", (req: express.Request, res: express.Response) => {
   res.json({ status: "ok" })
 })
+// express.get("/ex")
 homeEvent(app, prisma)
 handleActions(app, prisma)
   // load home module
