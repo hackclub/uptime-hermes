@@ -1,6 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 
-export default async function getAuditLogsView(prisma: PrismaClient) {
+export default async function getAuditLogsView(prisma: PrismaClient, tempKey: string) {
     const logs = await prisma.auditLog.findMany({
         orderBy: {
             createdAt: "desc"
@@ -43,7 +43,7 @@ export default async function getAuditLogsView(prisma: PrismaClient) {
                             type: "plain_text",
                             text: "Export"
                         },
-                        url: "https://siteorsmt.hackclub.com/export?key=tempkey&page=x"
+                        url: `https://siteorsmt.hackclub.com/export?key=${tempKey}&page=x`
                     }
                 ]
             },

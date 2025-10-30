@@ -14,7 +14,7 @@ export default function homeEvent(app: App, prisma: PrismaClient) {
         })
 
         try {
-            const defaultView = buildMain(app, event);
+            const defaultView = await buildMain(app, prisma, event);
             await client.views.publish({
                 user_id: event.user,
                 //@ts-ignore

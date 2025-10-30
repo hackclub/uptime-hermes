@@ -1,4 +1,4 @@
-- [ ] use prisma psql
+- [x] use prisma psql
 - [ ] deploy on coolify uptime server
 - [x] typescript app
 - [ ] admin config file (./src/admins.ts)
