@@ -24,7 +24,7 @@ export default async function getMyTeamsView(prisma: PrismaClient, slackUserId: 
         accessory: admins.includes(slackUserId) ? {
             type: "button" as const,
             text: {
-                type: "mrkdw" as const,
+                type: "plain_text" as const,
                 text: ":neocat_smug: Delete role"
             },
             action_id: `view_team_${team.id}`,
