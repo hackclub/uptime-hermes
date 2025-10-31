@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import { admins } from "../admins";
 
 export default async function getMyTeamsView(prisma: PrismaClient, slackUserId: string) {
     const user = await prisma.user.findUnique({
@@ -19,8 +20,18 @@ export default async function getMyTeamsView(prisma: PrismaClient, slackUserId: 
         text: {
             type: "mrkdwn" as const,
             text: `*${team.name}*\nCreated: <!date^${Math.floor(team.createdAt.getTime() / 1000)}^{date_short}|${team.createdAt.toLocaleDateString()}>`
-        }
+        },
+        accessory: admins.includes(slackUserId) ? {
+            type: "button" as const,
+            text: {
+                type: "mrkdw" as const,
+                text: ":neocat_smug: Delete role"
+            },
+            action_id: `view_team_${team.id}`,
+            value: team.id.toString()
+        } : undefined
     }));
+
 
     return {
         type: "home" as const,

@@ -12,6 +12,14 @@ export default function homeEvent(app: App, prisma: PrismaClient) {
                 action: "ACCESS_HOMEPAGE"
             }
         })
+        // create user account if user doesnt exist
+        await prisma.user.upsert({
+            where: { slackId: event.user },
+            create: {
+                slackId: event.user
+            },
+            update: {}
+        })
 
         try {
             const defaultView = await buildMain(app, prisma, event);

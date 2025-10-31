@@ -26,20 +26,29 @@ expressApp.get("/health", (req: express.Request, res: express.Response) => {
   res.json({ status: "ok" })
 })
 // express.get("/ex")
-expressApp.get('/export', (req,res) => {
+expressApp.get('/export', async (req, res) => {
   const a = req.query.key
-  if(keyHolder.validateAndUseKey(a as string)) {
-   // do stuff
+  if (keyHolder.validateAndUseKey(a as string)) {
+    const auditLogs = await prisma.auditLog.findMany({})
+    const content = auditLogs.map(a => `${a.id} | ${a.action} by ${a.author} ${a.target ? "to " + a.target : ""} at ${a.createdAt.toString()}`).join('\n')
+
+    res.setHeader('Content-Type', 'text/plain')
+    res.setHeader('Content-Disposition', 'attachment; filename="audit-logs.txt"')
+    res.send(content)
   } else {
     res.status(403).end("no")
   }
-  
 })
+
+
 homeEvent(app, prisma)
 handleActions(app, prisma)
   // load home module
   ; (async () => {
     const port = process.env.PORT || 3000
     await app.start(port)
+    if (process.env.SLACK_APP_TOKEN) {
+      expressApp.listen(port, () => console.log(`Webserver up`))
+    }
     app.logger.info(`⚡️ Bolt app is running on port ${port}!`)
   })()
