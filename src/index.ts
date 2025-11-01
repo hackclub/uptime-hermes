@@ -50,5 +50,11 @@ handleActions(app, prisma)
     if (process.env.SLACK_APP_TOKEN) {
       expressApp.listen(port, () => console.log(`Webserver up`))
     }
+    await prisma.auditLog.create({
+      data: {
+        action: "STARTUP",
+        author: "SYSTEM"
+      }
+    })
     app.logger.info(`⚡️ Bolt app is running on port ${port}!`)
   })()

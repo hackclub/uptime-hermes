@@ -5,33 +5,60 @@ export default async function getMyTeamsView(prisma: PrismaClient, slackUserId: 
     const user = await prisma.user.findUnique({
         where: { slackId: slackUserId },
         include: {
-            teams: true,
-            teamsMemberOf: true
+            teams: {
+                include: {
+                    teamCreator: true,
+                    usersOnTeam: true
+                }
+            },
+            teamsMemberOf: {
+                include: {
+                    teamCreator: true,
+                    usersOnTeam: true
+                }
+            }
         }
     });
 
-    const allTeams = user ? [
+    let allTeams = user ? [
         ...user.teams,
         ...user.teamsMemberOf
     ] : [];
+    // merge the array to prevent dupes
+    allTeams = allTeams.filter((team, index, self) =>
+        index === self.findIndex(t => t.id === team.id)
+    );
+    const teamBlocks = allTeams.map(team => {
+        const memberList = team.usersOnTeam.map(u => `<@${u.slackId}>`).join(', ');
+        const memberCount = team.usersOnTeam.length;
 
-    const teamBlocks = allTeams.map(team => ({
-        type: "section" as const,
-        text: {
-            type: "mrkdwn" as const,
-            text: `*${team.name}*\nCreated: <!date^${Math.floor(team.createdAt.getTime() / 1000)}^{date_short}|${team.createdAt.toLocaleDateString()}>`
-        },
-        accessory: admins.includes(slackUserId) ? {
-            type: "button" as const,
+        return {
+            type: "section" as const,
             text: {
-                type: "plain_text" as const,
-                text: ":neocat_smug: Delete role"
+                type: "mrkdwn" as const,
+                text: `*${team.name}*\nCreator: <@${team.teamCreator.slackId}>\nMembers (${memberCount}): ${memberList || 'None'}\nCreated: <!date^${Math.floor(team.createdAt.getTime() / 1000)}^{date_short}|${team.createdAt.toLocaleDateString()}>`
             },
-            action_id: `view_team_${team.id}`,
-            value: team.id.toString()
-        } : undefined
-    }));
-
+            accessory: admins.includes(slackUserId) ? {
+                type: "button" as const,
+                text: {
+                    type: "plain_text" as const,
+                    text: ":neocat_smug: Delete team"
+                },
+                action_id: `delete_team_${team.id}`,
+                value: team.id.toString()
+            } : undefined
+        };
+    });
+    const headerEls = [
+        admins.includes(slackUserId) ? {
+            type: "button",
+            text: {
+                type: "plain_text",
+                text: ":neocat_smug: Create team"
+            },
+            action_id: "create_team"
+        } : null
+    ].filter(Boolean)
 
     return {
         type: "home" as const,
@@ -44,20 +71,11 @@ export default async function getMyTeamsView(prisma: PrismaClient, slackUserId: 
                     emoji: true
                 }
             },
-            {
+            headerEls.length > 0 ? {
                 type: "actions",
-                elements: [
-                    {
-                        type: "button",
-                        text: {
-                            type: "plain_text",
-                            text: ":neocat_smug: Create team"
-                        },
-                        action_id: "create_team"
-                    }
-                ]
-            },
+                elements: headerEls
+            } : null,
             ...teamBlocks
-        ]
+        ].filter(Boolean)
     }
 }

@@ -3,7 +3,12 @@ import { PrismaClient } from "@prisma/client";
 export default async function getAuditLogsView(prisma: PrismaClient, tempKey: string) {
     const logs = await prisma.auditLog.findMany({
         orderBy: {
-            createdAt: "desc"
+            createdAt: "desc",
+        },
+        where: {
+            action: {
+                not: "ACCESS_HOMEPAGE"
+            }
         },
         take: 10
     })
