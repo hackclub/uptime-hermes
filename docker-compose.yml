@@ -22,7 +22,6 @@ services:
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/uptime_hermes
     depends_on:
       - postgres
-    command: sh -c "pnpm prisma db push && pnpm start"
 
 volumes:
   postgres_data:
