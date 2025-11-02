@@ -31,7 +31,7 @@ export default async function getMyTrackersView(prisma: PrismaClient, slackUserI
         type: "section" as const,
         text: {
             type: "mrkdwn" as const,
-            text: `*${tracker.name}*\nURL: ${tracker.url}\nTeam: ${tracker.team.name}\nCreated: <!date^${Math.floor(tracker.createdAt.getTime() / 1000)}^{date_short}|${tracker.createdAt.toLocaleDateString()}>`
+            text: `*${tracker.name}*\nTeam: ${tracker.team.name}\nCreated: <!date^${Math.floor(tracker.createdAt.getTime() / 1000)}^{date_short}|${tracker.createdAt.toLocaleDateString()}>`
         },
         accessory: {
             type: "button" as const,

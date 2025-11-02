@@ -21,7 +21,7 @@ const app = new App({
 //@ts-ignore
 app.keyholder = keyHolder;
 const expressApp = process.env.SLACK_APP_TOKEN ? express() : receiver.app
-
+expressApp.use(express.json())
 expressApp.get("/health", (req: express.Request, res: express.Response) => {
   res.json({ status: "ok" })
 })
@@ -39,7 +39,60 @@ expressApp.get('/export', async (req, res) => {
     res.status(403).end("no")
   }
 })
+expressApp.post("/uptimehook/:id", async (req, res) => {
+  console.log(req.body)
+  const authQuery = req.query.secret_key
+  if (authQuery !== process.env.SECRET_KEY) {
+    return res.status(401).end()
+  }
+  const trackerId = req.params.id
+  if (!trackerId) {
+    return res.status(403).end()
+  }
+  if (!req.body) {
+    return res.status(422).end()
+  }
+  const tracker = await prisma.uptimeKumaTracker.findFirst({
+    where: {
+      id: parseInt(trackerId)
+    },
+    include: {
+      creator: true,
+      team: true
+    }
+  })
+  if (!tracker) {
+    return res.status(404).end()
+  }
+  if (req.body.msg.endsWith("Testing")) {
+    // send msg to author and thats ab it
+    app.client.chat.postMessage({
+      channel: tracker.creator.slackId,
+      text: `Ack! test received for your uptime tracker on *${tracker.name}*`
+    })
+  }
+  if (req.body.heartbeat && req.body.monitor) {
+    const hb = req.body.heartbeat
+    const monitor = req.body.monitor
+    const team = await prisma.team.findUnique({
+      where: { id: tracker.teamId },
+      include: {
+        usersOnTeam: true
+      }
+    })
 
+    if (team) {
+      for (const member of team.usersOnTeam) {
+        await app.client.chat.postMessage({
+          channel: member.slackId,
+          text: `*${monitor.name}*: ${hb.status ? '✅ Up' : '❌ Down'}\n> ${hb.msg}`
+        }).catch(e => { })
+      }
+    }
+  }
+
+  res.status(200).end()
+})
 
 homeEvent(app, prisma)
 handleActions(app, prisma)

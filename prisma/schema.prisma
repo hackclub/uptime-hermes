@@ -14,11 +14,12 @@ datasource db {
 }
 
 model User {
-  id            Int      @id @default(autoincrement())
-  slackId       String   @unique
-  teams         Team[]   @relation("TeamCreator")
-  teamsMemberOf Team[]   @relation("TeamMembers")
-  createdAt     DateTime @default(now())
+  id                    Int                 @id @default(autoincrement())
+  slackId               String              @unique
+  teams                 Team[]              @relation("TeamCreator")
+  teamsMemberOf         Team[]              @relation("TeamMembers")
+  createdTrackers       UptimeKumaTracker[] @relation("TrackerCreator")
+  createdAt             DateTime            @default(now())
 }
 
 model Team {
@@ -35,9 +36,11 @@ model Team {
 model UptimeKumaTracker {
   id        Int      @id @default(autoincrement())
   name      String
-  url       String // will be the serverside generated url
+  url       String
   team      Team     @relation(fields: [teamId], references: [id])
   teamId    Int
+  creator   User     @relation("TrackerCreator", fields: [creatorId], references: [id])
+  creatorId Int
   createdAt DateTime @default(now())
 }
 

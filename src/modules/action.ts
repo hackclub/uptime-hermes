@@ -161,4 +161,127 @@ export default function handleActions(app: App, prisma: PrismaClient) {
             view: await getMyTrackersView(prisma, body.user.id)
         })
     })
+    //@ts-ignore SHUT UP
+    app.action("create_tracker", async ({ body, ack, client }) => {
+        await ack()
+        if (!admins.includes(body.user.id)) return;
+        const allTeams = await prisma.team.findMany({
+            include: {
+                teamCreator: true
+            },
+            orderBy: {
+                createdAt: 'desc'
+            }
+        })
+        const teams = allTeams.sort((a, b) => {
+            const aIsCreator = a.teamCreator.slackId === body.user.id;
+            const bIsCreator = b.teamCreator.slackId === body.user.id;
+            if (aIsCreator && !bIsCreator) return -1;
+            if (!aIsCreator && bIsCreator) return 1;
+            return 0;
+        })
+        if (teams.length == 0) {
+            return app.client.chat.postMessage({
+                channel: body.user.id,
+                text: "You dont have any teams rn! please create a team or be invited to one"
+            })
+        }
+        app.client.views.open({
+            //@ts-ignore slack fix your stuff please
+            trigger_id: body.trigger_id,
+            view: {
+                type: "modal" as const,
+                callback_id: "create_tracker_view",
+                title: {
+                    type: "plain_text",
+                    text: "Create Tracker",
+                    emoji: true
+                },
+                submit: {
+                    type: "plain_text",
+                    text: "Create"
+                },
+                blocks: [
+                    {
+                        type: "input",
+                        block_id: "tracker_name",
+                        label: {
+                            type: "plain_text",
+                            text: "Tracker Name"
+                        },
+                        element: {
+                            type: "plain_text_input",
+                            action_id: "tracker_name_input"
+                        }
+                    },
+                    {
+                        type: "input",
+                        block_id: "tracker_teams",
+                        label: {
+                            type: "plain_text",
+                            text: "Teams"
+                        },
+                        element: {
+                            type: "static_select",
+                            action_id: "tracker_teams_input",
+                            options: teams.map((d) => {
+                                return {
+                                    text: {
+                                        type: "plain_text",
+                                        text: `${d.name} by <@${d.teamCreator.slackId}>`
+                                    },
+                                    value: `team_${d.id}`
+                                }
+                            }),
+                        }
+                    }
+                ]
+            }
+        })
+    })
+    app.view("create_tracker_view", async ({ ack, body, view }) => {
+        await ack();
+        if (!admins.includes(body.user.id)) return;
+        const trackerName = view.state.values.tracker_name?.tracker_name_input?.value!;
+        const teamId = view.state.values.tracker_teams?.tracker_teams_input?.selected_option?.value;
+        console.log(trackerName, teamId)
+        let url = `${process.env.SITE_DOMAIN}/uptimehook/`
+        const data = await prisma.uptimeKumaTracker.create({
+            data: {
+                url,
+                team: {
+                    connect: {
+                        id: parseInt(teamId?.split(`team_`)[1]!)
+                    }
+                },
+                creator: {
+                    connect: {
+                        slackId: body.user.id
+                    }
+                },
+                name: trackerName
+            }
+        })
+        url = url + data.id + `?secret_key=${process.env.SECRET_KEY}`
+        await prisma.uptimeKumaTracker.update({
+            where: {
+                id: data.id
+            },
+            data: {
+                url: url
+            }
+        })
+        await prisma.auditLog.create({
+            data: {
+                target: `name: and s${trackerName}, teamid: ${teamId}`,
+                action: "CREATE_TRACKER",
+                author: body.user.id
+            }
+        })
+        // dm author
+        app.client.chat.postMessage({
+            channel: body.user.id,
+            text: `Tracker *${trackerName}* created!, make sure to set it up on uptime kuma as a notifcation under the name \`[urnamehere] ${trackerName}\` and then set the "Post URL" to this: ${url} and then please select application/json for body type!`
+        })
+    })
 }
